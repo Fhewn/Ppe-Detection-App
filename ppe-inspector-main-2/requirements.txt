@@ -1,0 +1,6 @@
+ultralytics
+opencv-python
+numpy
+flask
+Pillow
+gunicorn # App Engine'de uygulamanızı çalıştırmak için

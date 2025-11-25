@@ -1,0 +1,10 @@
+helmet
+vest
+gloves
+boots
+goggles
+mask
+person
+no-helmet
+no-vest
+no-mask

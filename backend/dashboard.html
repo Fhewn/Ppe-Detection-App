@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KKE Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+            padding: 30px 20px;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .logo i {
+            font-size: 3em;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        .logo h2 {
+            color: white;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        .logo p {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85em;
+        }
+        .nav-item {
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.8);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .nav-item i {
+            font-size: 1.2em;
+            width: 25px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+        }
+        .header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+        .refresh-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .refresh-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        /* Stats Cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+        .stat-card.blue::before { background: #3498db; }
+        .stat-card.green::before { background: #2ecc71; }
+        .stat-card.red::before { background: #e74c3c; }
+        .stat-card.orange::before { background: #f39c12; }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        .stat-card.blue .stat-icon { background: #e3f2fd; color: #3498db; }
+        .stat-card.green .stat-icon { background: #e8f5e9; color: #2ecc71; }
+        .stat-card.red .stat-icon { background: #ffebee; color: #e74c3c; }
+        .stat-card.orange .stat-icon { background: #fff3e0; color: #f39c12; }
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .table-header h2 {
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .check-icon {
+            font-size: 1.2em;
+        }
+        .check-yes { color: #2ecc71; }
+        .check-no { color: #e74c3c; }
+        
+        /* Charts */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .chart-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .chart-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        
+        /* Export Buttons */
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .export-btn {
+            background: white;
+            border: 2px solid #3498db;
+            color: #3498db;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .export-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+        .export-btn.excel {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+        .export-btn.excel:hover {
+            background: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fas fa-hard-hat"></i>
+            <h2>KKE Panel</h2>
+            <p>v1.0.0</p>
+        </div>
+        <div class="nav-item active" onclick="showPage('dashboard')">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showPage('controls')">
+            <i class="fas fa-clipboard-list"></i>
+            <span>Kontroller</span>
+        </div>
+        <div class="nav-item" onclick="showPage('records')">
+            <i class="fas fa-database"></i>
+            <span>Kayıtlar</span>
+        </div>
+        <div class="nav-item" onclick="showPage('reports')">
+            <i class="fas fa-chart-bar"></i>
+            <span>Raporlar</span>
+        </div>
+        <div class="nav-item" onclick="showPage('settings')">
+            <i class="fas fa-cog"></i>
+            <span>Ayarlar</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page-content">
+            <div class="header">
+                <h1>📊 Dashboard</h1>
+                <button class="refresh-btn" onclick="loadData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Yenile
+                </button>
+            </div>
+        
+        <div class="stats">
+            <div class="stat-card blue">
+                <div class="stat-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3>Toplam Kontrol</h3>
+                <div class="number" id="total">0</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Uygun</h3>
+                <div class="number" id="compliant">0</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3>Uygun Değil</h3>
+                <div class="number" id="non-compliant">0</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <h3>Uygunluk Oranı</h3>
+                <div class="number" id="rate">0%</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Son Kontroller</h2>
+                <div class="export-buttons">
+                    <button class="export-btn" onclick="exportPDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        PDF İndir
+                    </button>
+                    <button class="export-btn excel" onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        Excel İndir
+                    </button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tarih/Saat</th>
+                        <th>Kask</th>
+                        <th>Yelek</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody id="inspections-table">
+                    <tr><td colspan="4" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+        
+        <!-- Reports Page -->
+        <div id="reports-page" class="page-content" style="display: none;">
+            <div class="header">
+                <h1>📊 Raporlar ve Grafikler</h1>
+                <div class="export-buttons">
+                    <button class="export-btn" onclick="exportPDF()">
+                        <i class="fas fa-file-pdf"></i>
+                        PDF İndir
+                    </button>
+                    <button class="export-btn excel" onclick="exportExcel()">
+                        <i class="fas fa-file-excel"></i>
+                        Excel İndir
+                    </button>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h3>Toplam Kontrol</h3>
+                    <div class="number" id="total-report">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Uygun</h3>
+                    <div class="number" id="compliant-report">0</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3>Uygun Değil</h3>
+                    <div class="number" id="non-compliant-report">0</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <h3>Uygunluk Oranı</h3>
+                    <div class="number" id="rate-report">0%</div>
+                </div>
+            </div>
+            
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>📊 Uygunluk Dağılımı</h3>
+                    <canvas id="pieChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>📈 Ekipman Kullanım Oranları</h3>
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>📉 Günlük Kontrol Trendi</h3>
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>🎯 Ekipman Eksiklik Analizi</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Detaylı Rapor</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tarih/Saat</th>
+                            <th>Kask</th>
+                            <th>Yelek</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table">
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Other Pages (Placeholder) -->
+        <div id="controls-page" class="page-content" style="display: none;">
+            <div class="header">
+                <h1>📋 Kontroller</h1>
+            </div>
+            <div style="text-align: center; padding: 100px; color: #95a5a6;">
+                <i class="fas fa-clipboard-list" style="font-size: 4em; margin-bottom: 20px;"></i>
+                <h2>Kontroller Sayfası</h2>
+                <p>Yakında eklenecek...</p>
+            </div>
+        </div>
+        
+        <div id="records-page" class="page-content" style="display: none;">
+            <div class="header">
+                <h1>💾 Kayıtlar</h1>
+            </div>
+            <div style="text-align: center; padding: 100px; color: #95a5a6;">
+                <i class="fas fa-database" style="font-size: 4em; margin-bottom: 20px;"></i>
+                <h2>Kayıtlar Sayfası</h2>
+                <p>Yakında eklenecek...</p>
+            </div>
+        </div>
+        
+        <div id="settings-page" class="page-content" style="display: none;">
+            <div class="header">
+                <h1>⚙️ Sistem Ayarları</h1>
+                <button class="refresh-btn" onclick="loadSettings()">
+                    <i class="fas fa-sync-alt"></i>
+                    Yenile
+                </button>
+            </div>
+            
+            <!-- Veritabanı Yönetimi -->
+            <div class="table-container" style="margin-bottom: 30px;">
+                <div class="table-header">
+                    <h2>🗄️ Veritabanı Yönetimi</h2>
+                    <div class="export-buttons">
+                        <button class="export-btn" style="background: #e74c3c; border-color: #e74c3c; color: white;" onclick="clearAllData()">
+                            <i class="fas fa-trash"></i>
+                            Tüm Verileri Sil
+                        </button>
+                    </div>
+                </div>
+                <div style="padding: 20px;">
+                    <p style="color: #7f8c8d; margin-bottom: 20px;">
+                        <i class="fas fa-info-circle"></i> 
+                        Veritabanındaki tüm kontrol kayıtlarını yönetin. Kayıtları düzenleyebilir veya silebilirsiniz.
+                    </p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tarih/Saat</th>
+                                <th>Kask</th>
+                                <th>Yelek</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="settings-table">
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Sistem Bilgileri -->
+            <div class="stats">
+                <div class="stat-card blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Toplam Kayıt</h3>
+                    <div class="number" id="total-records">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3>Sunucu Durumu</h3>
+                    <div class="number" style="font-size: 1.5em;">Aktif</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h3>Versiyon</h3>
+                    <div class="number" style="font-size: 1.5em;">v1.0.0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pieChart, barChart, lineChart, radarChart;
+        let allInspections = [];
+        let currentStats = {};
+        
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageName + '-page').style.display = 'block';
+            
+            // Add active class to clicked nav item
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Load data for reports page
+            if (pageName === 'reports') {
+                loadReportsData();
+            }
+        }
+        
+        async function loadData() {
+            try {
+                // İstatistikleri yükle
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                currentStats = stats;
+                
+                document.getElementById('total').textContent = stats.total;
+                document.getElementById('compliant').textContent = stats.compliant;
+                document.getElementById('non-compliant').textContent = stats.non_compliant;
+                document.getElementById('rate').textContent = stats.compliance_rate + '%';
+                
+                // Kayıtları yükle
+                const inspRes = await fetch('/api/inspections');
+                const inspections = await inspRes.json();
+                allInspections = inspections;
+                
+                const tbody = document.getElementById('inspections-table');
+                tbody.innerHTML = '';
+                
+                if (inspections.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz kayıt yok</td></tr>';
+                    return;
+                }
+                
+                inspections.forEach(insp => {
+                    const date = new Date(insp.timestamp);
+                    const row = `
+                        <tr>
+                            <td>${date.toLocaleString('tr-TR')}</td>
+                            <td><i class="fas fa-${insp.kask ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
+                            <td><i class="fas fa-${insp.yelek ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
+                            <td>
+                                <span class="badge ${insp.uygunluk ? 'badge-success' : 'badge-danger'}">
+                                    ${insp.uygunluk ? '✓ Uygun' : '✗ Uygun Değil'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Veri yükleme hatası:', error);
+                document.getElementById('inspections-table').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #e74c3c;">Veri yüklenirken hata oluştu</td></tr>';
+            }
+        }
+        
+        
+        async function loadReportsData() {
+            try {
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                currentStats = stats;
+                
+                document.getElementById('total-report').textContent = stats.total;
+                document.getElementById('compliant-report').textContent = stats.compliant;
+                document.getElementById('non-compliant-report').textContent = stats.non_compliant;
+                document.getElementById('rate-report').textContent = stats.compliance_rate + '%';
+                
+                const inspRes = await fetch('/api/inspections');
+                const inspections = await inspRes.json();
+                allInspections = inspections;
+                
+                // Update report table
+                const tbody = document.getElementById('report-table');
+                tbody.innerHTML = '';
+                
+                if (inspections.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz kayıt yok</td></tr>';
+                } else {
+                    inspections.forEach(insp => {
+                        const date = new Date(insp.timestamp);
+                        const row = `
+                            <tr>
+                                <td>${date.toLocaleString('tr-TR')}</td>
+                                <td><i class="fas fa-${insp.kask ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
+                                <td><i class="fas fa-${insp.yelek ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
+                                <td>
+                                    <span class="badge ${insp.uygunluk ? 'badge-success' : 'badge-danger'}">
+                                        ${insp.uygunluk ? '✓ Uygun' : '✗ Uygun Değil'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                }
+                
+                updateCharts(stats, inspections);
+            } catch (error) {
+                console.error('Rapor yükleme hatası:', error);
+            }
+        }
+        
+        function updateCharts(stats, inspections) {
+            // Pie Chart - Uygunluk Dağılımı
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (pieChart) pieChart.destroy();
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Uygun', 'Uygun Değil'],
+                    datasets: [{
+                        data: [stats.compliant, stats.non_compliant],
+                        backgroundColor: ['#2ecc71', '#e74c3c'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Bar Chart - Ekipman Kullanımı
+            const kaskCount = inspections.filter(i => i.kask).length;
+            const yelekCount = inspections.filter(i => i.yelek).length;
+            
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            if (barChart) barChart.destroy();
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Kask', 'Yelek'],
+                    datasets: [{
+                        label: 'Kullanım Sayısı',
+                        data: [kaskCount, yelekCount],
+                        backgroundColor: ['#3498db', '#f39c12'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            
+            // Line Chart - Günlük Trend
+            const dailyData = {};
+            inspections.forEach(insp => {
+                const date = new Date(insp.timestamp).toLocaleDateString('tr-TR');
+                if (!dailyData[date]) {
+                    dailyData[date] = { total: 0, compliant: 0 };
+                }
+                dailyData[date].total++;
+                if (insp.uygunluk) dailyData[date].compliant++;
+            });
+            
+            const dates = Object.keys(dailyData).slice(-7); // Son 7 gün
+            const totals = dates.map(d => dailyData[d].total);
+            const compliants = dates.map(d => dailyData[d].compliant);
+            
+            const lineCtx = document.getElementById('lineChart').getContext('2d');
+            if (lineChart) lineChart.destroy();
+            lineChart = new Chart(lineCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Toplam Kontrol',
+                        data: totals,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Uygun',
+                        data: compliants,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            
+            // Radar Chart - Ekipman Analizi
+            const kaskMissing = inspections.filter(i => !i.kask).length;
+            const yelekMissing = inspections.filter(i => !i.yelek).length;
+            
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            if (radarChart) radarChart.destroy();
+            radarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Kask Eksik', 'Yelek Eksik'],
+                    datasets: [{
+                        label: 'Eksiklik Sayısı',
+                        data: [kaskMissing, yelekMissing],
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        borderColor: '#e74c3c',
+                        pointBackgroundColor: '#e74c3c'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        
+        async function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Kapak Sayfası
+            doc.setFillColor(30, 60, 114);
+            doc.rect(0, 0, 210, 297, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(32);
+            doc.text('KKE KONTROL RAPORU', 105, 100, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.text('Kişisel Koruyucu Ekipman', 105, 120, { align: 'center' });
+            doc.text('Denetim Sistemi', 105, 130, { align: 'center' });
+            
+            doc.setFontSize(12);
+            doc.text(`Rapor Tarihi: ${new Date().toLocaleString('tr-TR')}`, 105, 160, { align: 'center' });
+            
+            doc.setFontSize(10);
+            doc.text('Bu rapor otomatik olarak oluşturulmuştur.', 105, 250, { align: 'center' });
+            
+            // Sayfa 2 - Özet İstatistikler
+            doc.addPage();
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(18);
+            doc.text('📊 ÖZET İSTATİSTİKLER', 14, 20);
+            
+            // İstatistik kutuları
+            doc.setFillColor(52, 152, 219);
+            doc.roundedRect(14, 35, 90, 30, 3, 3, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.text('Toplam Kontrol', 20, 45);
+            doc.setFontSize(24);
+            doc.text(String(currentStats.total), 20, 58);
+            
+            doc.setFillColor(46, 204, 113);
+            doc.roundedRect(106, 35, 90, 30, 3, 3, 'F');
+            doc.setFontSize(12);
+            doc.text('Uygun', 112, 45);
+            doc.setFontSize(24);
+            doc.text(String(currentStats.compliant), 112, 58);
+            
+            doc.setFillColor(231, 76, 60);
+            doc.roundedRect(14, 70, 90, 30, 3, 3, 'F');
+            doc.setFontSize(12);
+            doc.text('Uygun Degil', 20, 80);
+            doc.setFontSize(24);
+            doc.text(String(currentStats.non_compliant), 20, 93);
+            
+            doc.setFillColor(243, 156, 18);
+            doc.roundedRect(106, 70, 90, 30, 3, 3, 'F');
+            doc.setFontSize(12);
+            doc.text('Uygunluk Orani', 112, 80);
+            doc.setFontSize(24);
+            doc.text(currentStats.compliance_rate + '%', 112, 93);
+            
+            // Ekipman Analizi
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(16);
+            doc.text('🔍 EKIPMAN ANALİZİ', 14, 120);
+            
+            const kaskCount = allInspections.filter(i => i.kask).length;
+            const yelekCount = allInspections.filter(i => i.yelek).length;
+            const kaskMissing = allInspections.length - kaskCount;
+            const yelekMissing = allInspections.length - yelekCount;
+            
+            doc.setFontSize(11);
+            let yPos = 135;
+            
+            // Kask
+            doc.setFillColor(52, 152, 219);
+            doc.circle(20, yPos, 3, 'F');
+            doc.text(`KASK: ${kaskCount} kullanım, ${kaskMissing} eksik`, 28, yPos + 2);
+            const kaskPercent = allInspections.length > 0 ? ((kaskCount / allInspections.length) * 100).toFixed(1) : 0;
+            doc.text(`(${kaskPercent}%)`, 120, yPos + 2);
+            
+            // Yelek
+            yPos += 10;
+            doc.setFillColor(243, 156, 18);
+            doc.circle(20, yPos, 3, 'F');
+            doc.text(`YELEK: ${yelekCount} kullanım, ${yelekMissing} eksik`, 28, yPos + 2);
+            const yelekPercent = allInspections.length > 0 ? ((yelekCount / allInspections.length) * 100).toFixed(1) : 0;
+            doc.text(`(${yelekPercent}%)`, 120, yPos + 2);
+            
+            // Grafikler (Canvas'tan görüntü olarak)
+            doc.setFontSize(16);
+            doc.text('📈 GRAFİKLER', 14, 175);
+            
+            // Pie Chart
+            if (pieChart) {
+                const pieImage = pieChart.toBase64Image();
+                doc.addImage(pieImage, 'PNG', 14, 185, 90, 90);
+            }
+            
+            // Bar Chart
+            if (barChart) {
+                const barImage = barChart.toBase64Image();
+                doc.addImage(barImage, 'PNG', 106, 185, 90, 90);
+            }
+            
+            // Sayfa 3 - Detaylı Tablo
+            doc.addPage();
+            doc.setFontSize(18);
+            doc.text('📋 DETAYLI KONTROL KAYITLARI', 14, 20);
+            
+            const tableData = allInspections.map(insp => [
+                new Date(insp.timestamp).toLocaleString('tr-TR'),
+                insp.kask ? '✓' : '✗',
+                insp.yelek ? '✓' : '✗',
+                insp.uygunluk ? 'Uygun' : 'Uygun Degil'
+            ]);
+            
+            doc.autoTable({
+                startY: 30,
+                head: [['Tarih/Saat', 'Kask', 'Yelek', 'Durum']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { 
+                    fillColor: [52, 152, 219],
+                    fontSize: 10,
+                    fontStyle: 'bold'
+                },
+                bodyStyles: {
+                    fontSize: 9
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 247, 250]
+                },
+                columnStyles: {
+                    0: { cellWidth: 60 },
+                    1: { cellWidth: 30, halign: 'center' },
+                    2: { cellWidth: 30, halign: 'center' },
+                    3: { cellWidth: 40, halign: 'center' }
+                }
+            });
+            
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Sayfa ${i} / ${pageCount}`, 105, 290, { align: 'center' });
+                doc.text('KKE Denetim Sistemi v1.0', 14, 290);
+            }
+            
+            doc.save(`KKE_Detayli_Rapor_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+        
+        function exportExcel() {
+            const data = allInspections.map(insp => ({
+                'Tarih/Saat': new Date(insp.timestamp).toLocaleString('tr-TR'),
+                'Kask': insp.kask ? 'Var' : 'Yok',
+                'Yelek': insp.yelek ? 'Var' : 'Yok',
+                'Durum': insp.uygunluk ? 'Uygun' : 'Uygun Değil'
+            }));
+            
+            // İstatistikler sayfası
+            const statsData = [
+                ['Toplam Kontrol', currentStats.total],
+                ['Uygun', currentStats.compliant],
+                ['Uygun Değil', currentStats.non_compliant],
+                ['Uygunluk Oranı', currentStats.compliance_rate + '%']
+            ];
+            
+            const wb = XLSX.utils.book_new();
+            
+            // İstatistikler sheet
+            const ws1 = XLSX.utils.aoa_to_sheet([['Metrik', 'Değer'], ...statsData]);
+            XLSX.utils.book_append_sheet(wb, ws1, 'İstatistikler');
+            
+            // Detaylar sheet
+            const ws2 = XLSX.utils.json_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws2, 'Kontrol Detayları');
+            
+            XLSX.writeFile(wb, `KKE_Rapor_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+        
+        
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/inspections_with_id');
+                const inspections = await res.json();
+                
+                document.getElementById('total-records').textContent = inspections.length;
+                
+                const tbody = document.getElementById('settings-table');
+                tbody.innerHTML = '';
+                
+                if (inspections.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz kayıt yok</td></tr>';
+                    return;
+                }
+                
+                inspections.forEach(insp => {
+                    const date = new Date(insp.timestamp);
+                    const row = `
+                        <tr>
+                            <td>${insp.id}</td>
+                            <td>${date.toLocaleString('tr-TR')}</td>
+                            <td><i class="fas fa-${insp.kask ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
+                            <td><i class="fas fa-${insp.yelek ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
+                            <td>
+                                <span class="badge ${insp.uygunluk ? 'badge-success' : 'badge-danger'}">
+                                    ${insp.uygunluk ? '✓ Uygun' : '✗ Uygun Değil'}
+                                </span>
+                            </td>
+                            <td>
+                                <button onclick="deleteRecord(${insp.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                                    <i class="fas fa-trash"></i> Sil
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Ayarlar yükleme hatası:', error);
+            }
+        }
+        
+        async function deleteRecord(id) {
+            if (!confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/delete_inspection/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    alert('Kayıt başarıyla silindi!');
+                    loadSettings();
+                    loadData(); // Dashboard'u da güncelle
+                } else {
+                    alert('Kayıt silinirken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Silme hatası:', error);
+                alert('Kayıt silinirken hata oluştu!');
+            }
+        }
+        
+        async function clearAllData() {
+            if (!confirm('TÜM KAYITLARI SİLMEK İSTEDİĞİNİZDEN EMİN MİSİNİZ?\n\nBu işlem geri alınamaz!')) {
+                return;
+            }
+            
+            if (!confirm('Son uyarı! Tüm veriler silinecek. Devam edilsin mi?')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/clear_all', {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    alert('Tüm kayıtlar başarıyla silindi!');
+                    loadSettings();
+                    loadData(); // Dashboard'u da güncelle
+                } else {
+                    alert('Kayıtlar silinirken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Silme hatası:', error);
+                alert('Kayıtlar silinirken hata oluştu!');
+            }
+        }
+        
+        // Sayfa yüklendiğinde ve her 30 saniyede bir yenile
+        loadData();
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
