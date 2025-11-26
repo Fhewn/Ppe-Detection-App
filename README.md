@@ -292,7 +292,7 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 ## 📸 Ekran Görüntüleri
 
 ### Mobil Uygulama
-![Mobile App](screenshots/mobile.png)
+![Mobile App](UygulamaArayuz.png)
 
 ### Admin Dashboard
 ![Dashboard](screenshots/dashboard.png)
