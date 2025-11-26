@@ -49,3 +49,9 @@ backend/build/
 ios/build/
 backend/*.jpg
 backend/*.db
+android/build/
+ios/Pods/
+**/Pods/
+*.pt
+*.tflite
+backend/backend/

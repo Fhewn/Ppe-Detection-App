@@ -24,6 +24,7 @@ def init_db():
             yelek INTEGER NOT NULL,
             gozluk INTEGER NOT NULL,
             uygunluk INTEGER NOT NULL,
+            image_filename TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -39,6 +40,14 @@ def dashboard():
     """Admin Dashboard"""
     return send_from_directory('.', 'dashboard.html')
 
+@app.route('/inspections/<filename>')
+def get_inspection_image(filename):
+    """Kontrol görüntüsünü getir"""
+    try:
+        return send_from_directory('inspections', filename)
+    except:
+        return '', 404
+
 @app.route('/validate_image', methods=['POST'])
 def validate_image():
     """Flutter uygulaması için PPE doğrulama"""
@@ -47,17 +56,38 @@ def validate_image():
             return jsonify({'error': 'No image provided'}), 400
         
         file = request.files['image']
-        image_pil = Image.open(file.stream).convert('RGB')
+        image_pil = Image.open(file.stream)
+        
+        # iPhone EXIF orientation düzeltmesi
+        try:
+            from PIL import ImageOps
+            image_pil = ImageOps.exif_transpose(image_pil)
+            print("📱 EXIF orientation düzeltildi")
+        except Exception as e:
+            print(f"⚠️ EXIF düzeltme hatası (normal): {e}")
+        
+        image_pil = image_pil.convert('RGB')
         image_rgb = np.array(image_pil)
         
-        print(f"📸 Image received: {image_rgb.shape}")
+        height, width = image_rgb.shape[:2]
+        print(f"📸 Image received: {width}x{height}")
         
-        # Debug: Save image for inspection
-        import cv2
-        cv2.imwrite('backend/last_test_image.jpg', cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR))
-        print("💾 Test görüntüsü kaydedildi: backend/last_test_image.jpg")
+        # Görüntü çok küçükse uyar
+        if width < 640 or height < 640:
+            print(f"⚠️ UYARI: Görüntü çok küçük! Tespit kalitesi düşük olabilir.")
         
         results = detector.validate_ppe(image_rgb)
+        
+        # Görüntüyü kaydet (timestamp ile)
+        import cv2
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        image_filename = f'inspection_{timestamp}.jpg'
+        image_path = os.path.join('backend', 'inspections', image_filename)
+        
+        # inspections klasörünü oluştur
+        os.makedirs(os.path.join('backend', 'inspections'), exist_ok=True)
+        cv2.imwrite(image_path, cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR))
+        print(f"💾 Görüntü kaydedildi: {image_path}")
         
         # Flutter için response'u düzenle - Sadece Kask ve Yelek
         detected_items = {
@@ -84,14 +114,15 @@ def validate_image():
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO inspections (timestamp, kask, yelek, gozluk, uygunluk)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO inspections (timestamp, kask, yelek, gozluk, uygunluk, image_filename)
+            VALUES (?, ?, ?, ?, ?, ?)
         ''', (
             datetime.now().isoformat(),
             1 if detected_items['Kask'] else 0,
             1 if detected_items['Yelek'] else 0,
             0,  # gozluk - artık kullanılmıyor
-            1 if success else 0
+            1 if success else 0,
+            image_filename
         ))
         conn.commit()
         conn.close()
@@ -112,7 +143,7 @@ def get_inspections():
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT timestamp, kask, yelek, gozluk, uygunluk
+            SELECT timestamp, kask, yelek, gozluk, uygunluk, image_filename
             FROM inspections
             ORDER BY timestamp DESC
             LIMIT 100
@@ -127,7 +158,8 @@ def get_inspections():
                 'kask': row[1],
                 'yelek': row[2],
                 'gozluk': row[3],
-                'uygunluk': row[4]
+                'uygunluk': row[4],
+                'image_filename': row[5]
             })
         
         return jsonify(inspections), 200

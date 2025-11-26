@@ -28,17 +28,23 @@ class _SimpleCheckScreenState extends State<SimpleCheckScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
+      // Kamera için daha yüksek kalite, galeri için optimize
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
+        maxWidth: source == ImageSource.camera ? 2400 : 1920,
+        maxHeight: source == ImageSource.camera ? 3200 : 1080,
+        imageQuality: source == ImageSource.camera ? 95 : 85,
+        preferredCameraDevice: CameraDevice.rear, // Arka kamera (daha iyi)
       );
 
       if (pickedFile != null) {
         setState(() {
           _imageFile = File(pickedFile.path);
-          _statusMessage = "Fotoğraf seçildi. Analiz Et butonuna basın.";
+          if (source == ImageSource.camera) {
+            _statusMessage = "📸 Kamera fotoğrafı alındı. Analiz Et butonuna basın.\n💡 İpucu: Kişi tam karşıdan, yakın mesafeden çekilmeli.";
+          } else {
+            _statusMessage = "🖼️ Galeri fotoğrafı seçildi. Analiz Et butonuna basın.";
+          }
           _analysisResult = null;
         });
       }
@@ -76,7 +82,7 @@ class _SimpleCheckScreenState extends State<SimpleCheckScreen> {
       );
 
       var streamedResponse = await request.send().timeout(
-        const Duration(seconds: 30),
+        const Duration(seconds: 60),
         onTimeout: () {
           throw Exception('İstek zaman aşımına uğradı. Lütfen tekrar deneyin.');
         },
@@ -191,15 +197,39 @@ class _SimpleCheckScreenState extends State<SimpleCheckScreen> {
                 const SizedBox(height: 20),
 
                 // Durum Mesajı
-                Text(
-                  _statusMessage,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: _analysisResult != null && _analysisResult!['success']
-                        ? Colors.green
-                        : Colors.orange,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        _statusMessage,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _analysisResult != null && _analysisResult!['success']
+                              ? Colors.green
+                              : Colors.orange,
+                        ),
+                      ),
+                      if (_imageFile == null) ...[
+                        const SizedBox(height: 8),
+                        const Text(
+                          "📋 Fotoğraf Çekim İpuçları:\n"
+                          "• Kişi tam karşıdan görünsün\n"
+                          "• Kask ve yelek net görünsün\n"
+                          "• İyi ışıklandırma olsun\n"
+                          "• 1-2 metre mesafeden çekin",
+                          textAlign: TextAlign.left,
+                          style: TextStyle(fontSize: 12, color: Colors.black54),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
