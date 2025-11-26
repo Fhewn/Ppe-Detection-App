@@ -1,7 +1,7 @@
 # 🦺 KKE Denetim Sistemi (PPE Detection System)
 
 Kişisel Koruyucu Ekipman (KKE) tespiti için yapay zeka destekli mobil uygulama ve yönetim paneli.
-🇹🇷
+
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![YOLO](https://img.shields.io/badge/YOLO-00FFFF?style=for-the-badge&logo=yolo&logoColor=black)
