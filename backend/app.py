@@ -6,6 +6,13 @@ import numpy as np
 import sqlite3
 from datetime import datetime
 import os
+try:
+    import face_recognition
+    FACE_RECOGNITION_AVAILABLE = True
+except ImportError:
+    FACE_RECOGNITION_AVAILABLE = False
+    print("⚠️ Face recognition modülü bulunamadı. Kullanıcı kayıt/giriş özellikleri devre dışı.")
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +32,18 @@ def init_db():
             gozluk INTEGER NOT NULL,
             uygunluk INTEGER NOT NULL,
             image_filename TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            surname TEXT NOT NULL,
+            sicil_no TEXT UNIQUE NOT NULL,
+            face_encoding TEXT NOT NULL,
+            photo_filename TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -221,7 +240,7 @@ def clear_all():
 
 @app.route('/api/inspections_with_id', methods=['GET'])
 def get_inspections_with_id():
-    """ID'li kayıtları getir"""
+    """ID'li kayıtları getir - Tarih/saat'e göre azalan sıralı"""
     try:
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
@@ -248,8 +267,283 @@ def get_inspections_with_id():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/add_inspection', methods=['POST'])
+def add_inspection():
+    """Yeni kayıt ekle"""
+    try:
+        data = request.get_json()
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO inspections (timestamp, kask, yelek, gozluk, uygunluk, image_filename)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            data['timestamp'],
+            data['kask'],
+            data['yelek'],
+            0,  # gozluk
+            data['uygunluk'],
+            'manual_entry.jpg'
+        ))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Kayıt eklendi'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/update_inspection/<int:id>', methods=['PUT'])
+def update_inspection(id):
+    """Kaydı güncelle"""
+    try:
+        data = request.get_json()
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE inspections 
+            SET timestamp = ?, kask = ?, yelek = ?, uygunluk = ?
+            WHERE id = ?
+        ''', (
+            data['timestamp'],
+            data['kask'],
+            data['yelek'],
+            data['uygunluk'],
+            id
+        ))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Kayıt güncellendi'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/add_test_data', methods=['POST'])
+def add_test_data():
+    """Test verileri ekle"""
+    try:
+        import random
+        from datetime import timedelta
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        
+        # 10 adet test verisi ekle
+        for i in range(10):
+            # Rastgele tarih (son 30 gün)
+            random_date = datetime.now() - timedelta(days=random.randint(0, 30), hours=random.randint(0, 23))
+            
+            # Rastgele ekipman durumu
+            kask = random.choice([0, 1])
+            yelek = random.choice([0, 1])
+            uygunluk = 1 if (kask and yelek) else 0
+            
+            cursor.execute('''
+                INSERT INTO inspections (timestamp, kask, yelek, gozluk, uygunluk, image_filename)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                random_date.isoformat(),
+                kask, yelek, 0, uygunluk,
+                f'test_image_{i+1}.jpg'
+            ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': '10 test verisi eklendi'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/backup', methods=['GET'])
+def backup_database():
+    """Veritabanını JSON olarak yedekle"""
+    try:
+        import json
+        from flask import Response
+        
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM inspections ORDER BY timestamp DESC')
+        rows = cursor.fetchall()
+        conn.close()
+        
+        # Kolon isimleri
+        columns = ['id', 'timestamp', 'kask', 'yelek', 'gozluk', 'uygunluk', 'image_filename', 'created_at']
+        
+        # JSON formatına çevir
+        backup_data = []
+        for row in rows:
+            record = {}
+            for i, col in enumerate(columns):
+                if i < len(row):
+                    record[col] = row[i]
+            backup_data.append(record)
+        
+        backup = {
+            'export_date': datetime.now().isoformat(),
+            'total_records': len(backup_data),
+            'data': backup_data
+        }
+        
+        response = Response(
+            json.dumps(backup, indent=2, ensure_ascii=False),
+            mimetype='application/json',
+            headers={
+                'Content-Disposition': f'attachment; filename=ppe_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+            }
+        )
+        
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/register_user', methods=['POST'])
+def register_user():
+    """Kullanıcı Kayıt"""
+    if not FACE_RECOGNITION_AVAILABLE:
+        return jsonify({'error': 'Face recognition modülü mevcut değil'}), 500
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'}), 400
+            
+        name = request.form.get('name')
+        surname = request.form.get('surname')
+        
+        if not name or not surname:
+            return jsonify({'error': 'Name and surname required'}), 400
+
+        file = request.files['image']
+        image_pil = Image.open(file.stream)
+        
+        # EXIF düzeltme
+        try:
+            from PIL import ImageOps
+            image_pil = ImageOps.exif_transpose(image_pil)
+        except:
+            pass
+            
+        image_pil = image_pil.convert('RGB')
+        image_np = np.array(image_pil)
+        
+        # Yüz tespiti ve encoding
+        face_locations = face_recognition.face_locations(image_np)
+        if not face_locations:
+            return jsonify({'error': 'Yüz bulunamadı'}), 400
+            
+        if len(face_locations) > 1:
+            return jsonify({'error': 'Birden fazla yüz tespit edildi'}), 400
+            
+        face_encodings = face_recognition.face_encodings(image_np, face_locations)
+        if not face_encodings:
+            return jsonify({'error': 'Yüz kodlanamadı'}), 400
+            
+        face_encoding = face_encodings[0].tolist()
+        
+        # Sicil No oluştur (Yıl + Random 4 hane)
+        import random
+        sicil_no = f"{datetime.now().year}{random.randint(1000, 9999)}"
+        
+        # Fotoğrafı kaydet
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        photo_filename = f'user_{sicil_no}_{timestamp}.jpg'
+        os.makedirs(os.path.join('backend', 'users'), exist_ok=True)
+        image_pil.save(os.path.join('backend', 'users', photo_filename))
+        
+        # Veritabanına kaydet
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO users (name, surname, sicil_no, face_encoding, photo_filename)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (name, surname, sicil_no, json.dumps(face_encoding), photo_filename))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            return jsonify({'error': 'Sicil no çakışması, tekrar deneyin'}), 500
+        finally:
+            conn.close()
+            
+        return jsonify({
+            'success': True,
+            'message': 'Kayıt başarılı',
+            'user': {
+                'name': name,
+                'surname': surname,
+                'sicil_no': sicil_no
+            }
+        }), 200
+        
+    except Exception as e:
+        print(f"Register Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/login_user', methods=['POST'])
+def login_user():
+    """Yüz ile Giriş"""
+    if not FACE_RECOGNITION_AVAILABLE:
+        return jsonify({'error': 'Face recognition modülü mevcut değil'}), 500
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'}), 400
+            
+        file = request.files['image']
+        image_pil = Image.open(file.stream)
+        
+        # EXIF düzeltme
+        try:
+            from PIL import ImageOps
+            image_pil = ImageOps.exif_transpose(image_pil)
+        except:
+            pass
+            
+        image_pil = image_pil.convert('RGB')
+        image_np = np.array(image_pil)
+        
+        # Gelen görüntüdeki yüzü bul
+        face_locations = face_recognition.face_locations(image_np)
+        if not face_locations:
+            return jsonify({'error': 'Yüz bulunamadı'}), 400
+            
+        unknown_face_encoding = face_recognition.face_encodings(image_np, face_locations)[0]
+        
+        # Veritabanındaki kullanıcıları çek
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, name, surname, sicil_no, face_encoding FROM users')
+        users = cursor.fetchall()
+        conn.close()
+        
+        for user in users:
+            user_id, name, surname, sicil_no, encoding_json = user
+            known_face_encoding = np.array(json.loads(encoding_json))
+            
+            # Karşılaştır
+            results = face_recognition.compare_faces([known_face_encoding], unknown_face_encoding, tolerance=0.6)
+            
+            if results[0]:
+                return jsonify({
+                    'success': True,
+                    'message': 'Giriş başarılı',
+                    'user': {
+                        'name': name,
+                        'surname': surname,
+                        'sicil_no': sicil_no
+                    }
+                }), 200
+                
+        return jsonify({'success': False, 'message': 'Kullanıcı tanınamadı'}), 401
+        
+    except Exception as e:
+        print(f"Login Error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     print("🚀 KKE Detection API başlatılıyor...")
-    print("📡 URL: http://localhost:5001")
-    print("📊 Dashboard: http://localhost:5001")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    print("📡 URL: http://0.0.0.0:5001")
+    print("📊 Dashboard: http://0.0.0.0:5001")
+    # Production için debug=False
+    import os
+    debug_mode = os.getenv('FLASK_ENV') != 'production'
+    app.run(host='0.0.0.0', port=5001, debug=debug_mode)

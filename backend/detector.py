@@ -9,9 +9,14 @@ class Detector:
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found at: {model_path}")
             
+        print("📦 Model yükleniyor...")
         # Optimize model for faster inference
+        import torch
+        torch.hub.set_dir(os.path.join(os.path.dirname(__file__), '.cache'))
         self.model = YOLO(model_path)
+        print("🔧 Model optimize ediliyor...")
         self.model.fuse()  # Fuse layers for faster inference
+        print("✅ Model hazır!")
     
     def check_image_quality(self, image):
         """Görüntü kalitesini kontrol et (bulanıklık tespiti)"""
@@ -82,8 +87,11 @@ class Detector:
         else:
             print("✅ Görüntü kalitesi iyi!")
         
-        # Low confidence threshold for better detection
-        results = self.model(image, conf=0.01, imgsz=640, verbose=False)
+        # Çok düşük confidence threshold ile tüm tespitleri al
+        # Yelek tespiti için daha büyük görüntü boyutu ve daha hassas ayarlar
+        results = self.model(image, conf=0.005, imgsz=832, verbose=False, 
+                           augment=True,  # Test-time augmentation
+                           agnostic_nms=True)  # Class-agnostic NMS
         
         # Track best confidence for each item
         helmet_detections = []  # (has_helmet, confidence)
@@ -121,26 +129,28 @@ class Detector:
                     vest_detections.append((False, conf))
                     print(f"    ❌ YELEK YOK!")
         
-        # Use smart logic: require minimum 0.60 confidence for positive detections
+        # Use smart logic: require minimum confidence for positive detections
         detected_items = {
             "helmet": False,
             "vest": False
         }
         
-        MIN_CONFIDENCE = 0.40  # Minimum confidence for positive detection
+        # Yelek için daha düşük threshold (yelek tespiti daha zor)
+        MIN_CONFIDENCE_HELMET = 0.35  # Kask için minimum confidence
+        MIN_CONFIDENCE_VEST = 0.25    # Yelek için daha düşük minimum confidence
         
         if helmet_detections:
             # Sort by confidence
             positive = sorted([d for d in helmet_detections if d[0] == True], key=lambda x: x[1], reverse=True)
             negative = sorted([d for d in helmet_detections if d[0] == False], key=lambda x: x[1], reverse=True)
             
-            if positive and positive[0][1] >= MIN_CONFIDENCE:
+            if positive and positive[0][1] >= MIN_CONFIDENCE_HELMET:
                 detected_items['helmet'] = True
                 print(f"  🎯 KASK Sonuç: VAR (conf: {positive[0][1]:.2f}) ✓")
             else:
                 detected_items['helmet'] = False
                 if positive:
-                    print(f"  🎯 KASK Sonuç: YOK (pozitif tespit yetersiz: {positive[0][1]:.2f} < {MIN_CONFIDENCE})")
+                    print(f"  🎯 KASK Sonuç: YOK (pozitif tespit yetersiz: {positive[0][1]:.2f} < {MIN_CONFIDENCE_HELMET})")
                 elif negative:
                     print(f"  🎯 KASK Sonuç: YOK (negatif tespit: {negative[0][1]:.2f})")
                 else:
@@ -151,13 +161,22 @@ class Detector:
             positive = sorted([d for d in vest_detections if d[0] == True], key=lambda x: x[1], reverse=True)
             negative = sorted([d for d in vest_detections if d[0] == False], key=lambda x: x[1], reverse=True)
             
-            if positive and positive[0][1] >= MIN_CONFIDENCE:
+            # Yelek için daha esnek yaklaşım
+            if positive and positive[0][1] >= MIN_CONFIDENCE_VEST:
                 detected_items['vest'] = True
                 print(f"  🎯 YELEK Sonuç: VAR (conf: {positive[0][1]:.2f}) ✓")
+            # Eğer pozitif tespit varsa ama düşük confidence'sa, negatif tespitle karşılaştır
+            elif positive and negative:
+                if positive[0][1] > negative[0][1] * 0.8:  # Pozitif, negatifin %80'inden fazlaysa
+                    detected_items['vest'] = True
+                    print(f"  🎯 YELEK Sonuç: VAR (pozitif {positive[0][1]:.2f} > negatif {negative[0][1]:.2f}) ✓")
+                else:
+                    detected_items['vest'] = False
+                    print(f"  🎯 YELEK Sonuç: YOK (negatif daha güçlü: {negative[0][1]:.2f} vs {positive[0][1]:.2f})")
             else:
                 detected_items['vest'] = False
                 if positive:
-                    print(f"  🎯 YELEK Sonuç: YOK (pozitif tespit yetersiz: {positive[0][1]:.2f} < {MIN_CONFIDENCE})")
+                    print(f"  🎯 YELEK Sonuç: YOK (pozitif tespit yetersiz: {positive[0][1]:.2f} < {MIN_CONFIDENCE_VEST})")
                 elif negative:
                     print(f"  🎯 YELEK Sonuç: YOK (negatif tespit: {negative[0][1]:.2f})")
                 else:

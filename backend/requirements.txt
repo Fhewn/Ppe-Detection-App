@@ -1,0 +1,22 @@
+# PPE Detection Backend - Python Requirements
+
+# Web Framework
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# Image Processing
+Pillow==10.1.0
+numpy==1.26.2
+opencv-python==4.8.1.78
+
+# Face Recognition (Opsiyonel - Kurulum uzun sürebilir)
+# cmake==3.27.9
+# dlib==19.24.2
+# face_recognition==1.3.0
+
+# Production Server (Önerilen)
+gunicorn==21.2.0
+
+# Utilities
+python-dotenv==1.0.0
+pytz==2023.3

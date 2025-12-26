@@ -10,10 +10,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f7fa;
+            background: #f0f2f5;
             min-height: 100vh;
         }
         
@@ -24,254 +27,615 @@
             top: 0;
             width: 260px;
             height: 100vh;
-            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
-            padding: 30px 20px;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            background: #1a1d29;
+            padding: 25px 15px;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
         .logo {
             text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 35px;
+            padding: 20px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         .logo i {
-            font-size: 3em;
-            color: #ffd700;
-            margin-bottom: 10px;
+            font-size: 2.8em;
+            color: #4f46e5;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 8px rgba(79, 70, 229, 0.4));
         }
         .logo h2 {
-            color: white;
-            font-size: 1.5em;
+            color: #ffffff;
+            font-size: 1.4em;
             margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         .logo p {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8em;
+            font-weight: 500;
         }
         .nav-item {
-            padding: 15px 20px;
-            margin: 10px 0;
+            padding: 13px 16px;
+            margin: 6px 0;
             border-radius: 10px;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 14px;
+            font-weight: 600;
+            font-size: 0.95em;
+            position: relative;
         }
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255,255,255,0.1);
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.95);
+            transform: translateX(4px);
+        }
+        .nav-item.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
         }
         .nav-item i {
             font-size: 1.2em;
-            width: 25px;
+            width: 22px;
         }
         
         /* Main Content */
         .main-content {
             margin-left: 260px;
-            padding: 30px;
+            padding: 35px;
         }
         .header {
             background: white;
-            padding: 25px 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 28px 35px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         .header h1 {
-            color: #2c3e50;
-            font-size: 1.8em;
+            color: #1a1d29;
+            font-size: 1.75em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         .refresh-btn {
-            background: #3498db;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         .refresh-btn:hover {
-            background: #2980b9;
             transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+        }
+        .refresh-btn:active {
+            transform: translateY(0);
         }
         
         /* Stats Cards */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
             margin-bottom: 30px;
         }
         .stat-card {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 28px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            transition: transform 0.3s;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
         .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            width: 4px;
-            height: 100%;
+            right: 0;
+            height: 4px;
+            background: var(--card-gradient);
         }
-        .stat-card.blue::before { background: #3498db; }
-        .stat-card.green::before { background: #2ecc71; }
-        .stat-card.red::before { background: #e74c3c; }
-        .stat-card.orange::before { background: #f39c12; }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        .stat-card.blue {
+            --card-gradient: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        }
+        .stat-card.blue .stat-icon { background: #eef2ff; color: #4f46e5; }
+        .stat-card.green {
+            --card-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .stat-card.green .stat-icon { background: #d1fae5; color: #10b981; }
+        .stat-card.red {
+            --card-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+        .stat-card.red .stat-icon { background: #fee2e2; color: #ef4444; }
+        .stat-card.orange {
+            --card-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+        .stat-card.orange .stat-icon { background: #fef3c7; color: #f59e0b; }
         .stat-icon {
-            width: 60px;
-            height: 60px;
+            width: 56px;
+            height: 56px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8em;
-            margin-bottom: 15px;
+            font-size: 1.6em;
+            margin-bottom: 18px;
+            transition: transform 0.3s ease;
         }
-        .stat-card.blue .stat-icon { background: #e3f2fd; color: #3498db; }
-        .stat-card.green .stat-icon { background: #e8f5e9; color: #2ecc71; }
-        .stat-card.red .stat-icon { background: #ffebee; color: #e74c3c; }
-        .stat-card.orange .stat-icon { background: #fff3e0; color: #f39c12; }
+        .stat-card:hover .stat-icon {
+            transform: scale(1.05);
+        }
         .stat-card h3 {
-            color: #7f8c8d;
-            font-size: 0.9em;
-            margin-bottom: 10px;
+            color: #64748b;
+            font-size: 0.8em;
+            margin-bottom: 12px;
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
             letter-spacing: 0.5px;
         }
         .stat-card .number {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #2c3e50;
+            font-size: 2.4em;
+            font-weight: 800;
+            color: #1a1d29;
+            letter-spacing: -1px;
         }
         
         /* Table */
         .table-container {
             background: white;
-            border-radius: 15px;
+            border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         .table-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f2f5;
         }
         .table-header h2 {
-            color: #2c3e50;
-            font-size: 1.5em;
+            color: #1a1d29;
+            font-size: 1.4em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
         }
         th, td {
-            padding: 15px;
+            padding: 16px 18px;
             text-align: left;
-            border-bottom: 1px solid #ecf0f1;
         }
         th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #2c3e50;
+            background: #f8fafc;
+            font-weight: 700;
+            color: #475569;
             text-transform: uppercase;
-            font-size: 0.85em;
+            font-size: 0.75em;
             letter-spacing: 0.5px;
+            border-bottom: 2px solid #e2e8f0;
         }
-        tr:hover {
-            background: #f8f9fa;
+        th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+        th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+        tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        tbody tr:hover {
+            background: #f8fafc;
+            transform: scale(1.01);
+        }
+        tbody tr:last-child {
+            border-bottom: none;
         }
         .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 6px 14px;
+            border-radius: 8px;
             font-size: 0.85em;
-            font-weight: 600;
+            font-weight: 700;
             display: inline-block;
+            letter-spacing: 0.3px;
         }
-        .badge-success { background: #d4edda; color: #155724; }
-        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-success { 
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .badge-danger { 
+            background: #fee2e2;
+            color: #991b1b;
+        }
         .check-icon {
-            font-size: 1.2em;
+            font-size: 1.3em;
         }
-        .check-yes { color: #2ecc71; }
-        .check-no { color: #e74c3c; }
+        .check-yes { 
+            color: #10b981;
+        }
+        .check-no { 
+            color: #ef4444;
+        }
         
         /* Charts */
         .charts-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 24px;
             margin-bottom: 30px;
         }
         .chart-card {
             background: white;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
         .chart-card h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.2em;
+            color: #1a1d29;
+            margin-bottom: 24px;
+            font-size: 1.15em;
+            font-weight: 700;
+            letter-spacing: -0.3px;
         }
         
         /* Export Buttons */
         .export-buttons {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
         .export-btn {
             background: white;
-            border: 2px solid #3498db;
-            color: #3498db;
+            border: 2px solid #e2e8f0;
+            color: #475569;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
         }
         .export-btn:hover {
-            background: #3498db;
-            color: white;
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
         .export-btn.excel {
-            border-color: #27ae60;
-            color: #27ae60;
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
         .export-btn.excel:hover {
-            background: #27ae60;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f0f2f5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Page Transitions */
+        .page-content {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+            font-size: 1.2em;
+        }
+        
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main-content {
+                margin-left: 240px;
+                padding: 25px;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 80px 16px 20px 16px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px 16px;
+                border-radius: 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.4em;
+                text-align: center;
+            }
+            
+            .refresh-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-card .number {
+                font-size: 2em;
+            }
+            
+            .table-container {
+                padding: 20px 16px;
+                border-radius: 12px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .table-container::-webkit-scrollbar {
+                height: 6px;
+            }
+            
+            .table-container::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .table-header h2 {
+                font-size: 1.2em;
+            }
+            
+            .export-buttons {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .export-btn {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+                font-size: 0.85em;
+                padding: 12px 16px;
+                min-height: 44px;
+            }
+            
+            .nav-item {
+                padding: 14px 16px;
+                min-height: 48px;
+            }
+            
+            .refresh-btn {
+                min-height: 44px;
+            }
+            
+            table {
+                font-size: 0.85em;
+                min-width: 600px;
+            }
+            
+            th, td {
+                padding: 12px 10px;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .chart-card {
+                padding: 20px 16px;
+                border-radius: 12px;
+            }
+            
+            .chart-card h3 {
+                font-size: 1em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mobile-menu-btn {
+                width: 40px;
+                height: 40px;
+                top: 15px;
+                left: 15px;
+                font-size: 1.1em;
+            }
+            
+            .main-content {
+                padding: 70px 12px 16px 12px;
+            }
+            
+            .header {
+                padding: 16px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em;
+            }
+            
+            .stats {
+                gap: 12px;
+            }
+            
+            .stat-card {
+                padding: 18px;
+            }
+            
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5em;
+                margin-bottom: 12px;
+            }
+            
+            .stat-card h3 {
+                font-size: 0.75em;
+                margin-bottom: 8px;
+            }
+            
+            .stat-card .number {
+                font-size: 1.9em;
+            }
+            
+            .table-container {
+                padding: 16px 12px;
+            }
+            
+            .table-header h2 {
+                font-size: 1.1em;
+            }
+            
+            .export-btn {
+                font-size: 0.8em;
+                padding: 10px 12px;
+                min-height: 40px;
+            }
+            
+            .badge {
+                padding: 4px 10px;
+                font-size: 0.75em;
+            }
+            
+            table {
+                font-size: 0.8em;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="logo">
             <i class="fas fa-hard-hat"></i>
             <h2>KKE Panel</h2>
@@ -281,22 +645,17 @@
             <i class="fas fa-chart-line"></i>
             <span>Dashboard</span>
         </div>
-        <div class="nav-item" onclick="showPage('controls')">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Kontroller</span>
+
+        <div class="nav-item" onclick="showPage('users')">
+            <i class="fas fa-users"></i>
+            <span>Kullanıcılar</span>
         </div>
-        <div class="nav-item" onclick="showPage('records')">
-            <i class="fas fa-database"></i>
-            <span>Kayıtlar</span>
-        </div>
+
         <div class="nav-item" onclick="showPage('reports')">
             <i class="fas fa-chart-bar"></i>
             <span>Raporlar</span>
         </div>
-        <div class="nav-item" onclick="showPage('settings')">
-            <i class="fas fa-cog"></i>
-            <span>Ayarlar</span>
-        </div>
+
     </div>
 
     <!-- Main Content -->
@@ -359,7 +718,10 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Tarih/Saat</th>
+                        <th>
+                            <i class="fas fa-sort-down" style="color: #4f46e5; margin-right: 5px;"></i>
+                            Tarih/Saat (En Yeni)
+                        </th>
                         <th>Kask</th>
                         <th>Yelek</th>
                         <th>Durum</th>
@@ -449,7 +811,10 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Tarih/Saat</th>
+                            <th>
+                                <i class="fas fa-sort-down" style="color: #4f46e5; margin-right: 5px;"></i>
+                                Tarih/Saat (En Yeni)
+                            </th>
                             <th>Kask</th>
                             <th>Yelek</th>
                             <th>Durum</th>
@@ -462,70 +827,200 @@
             </div>
         </div>
         
-        <!-- Other Pages (Placeholder) -->
-        <div id="controls-page" class="page-content" style="display: none;">
-            <div class="header">
-                <h1>📋 Kontroller</h1>
-            </div>
-            <div style="text-align: center; padding: 100px; color: #95a5a6;">
-                <i class="fas fa-clipboard-list" style="font-size: 4em; margin-bottom: 20px;"></i>
-                <h2>Kontroller Sayfası</h2>
-                <p>Yakında eklenecek...</p>
-            </div>
-        </div>
+
         
-        <div id="records-page" class="page-content" style="display: none;">
+        <!-- Users Page -->
+        <div id="users-page" class="page-content" style="display: none;">
             <div class="header">
-                <h1>💾 Kayıtlar</h1>
-            </div>
-            <div style="text-align: center; padding: 100px; color: #95a5a6;">
-                <i class="fas fa-database" style="font-size: 4em; margin-bottom: 20px;"></i>
-                <h2>Kayıtlar Sayfası</h2>
-                <p>Yakında eklenecek...</p>
-            </div>
-        </div>
-        
-        <div id="settings-page" class="page-content" style="display: none;">
-            <div class="header">
-                <h1>⚙️ Sistem Ayarları</h1>
-                <button class="refresh-btn" onclick="loadSettings()">
+                <h1>👥 Kullanıcılar</h1>
+                <button class="refresh-btn" onclick="loadUsers()">
                     <i class="fas fa-sync-alt"></i>
                     Yenile
                 </button>
             </div>
             
-            <!-- Veritabanı Yönetimi -->
-            <div class="table-container" style="margin-bottom: 30px;">
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-card blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Toplam Kullanıcı</h3>
+                    <div class="number" id="total-users">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <h3>Aktif Kullanıcı</h3>
+                    <div class="number" id="active-users">0</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <h3>Bugün Kayıt</h3>
+                    <div class="number" id="today-users">0</div>
+                </div>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="table-container">
                 <div class="table-header">
-                    <h2>🗄️ Veritabanı Yönetimi</h2>
+                    <h2>Kayıtlı Kullanıcılar</h2>
                     <div class="export-buttons">
-                        <button class="export-btn" style="background: #e74c3c; border-color: #e74c3c; color: white;" onclick="clearAllData()">
-                            <i class="fas fa-trash"></i>
-                            Tüm Verileri Sil
+                        <button class="export-btn excel" onclick="exportUsersExcel()">
+                            <i class="fas fa-file-excel"></i>
+                            Excel İndir
                         </button>
                     </div>
                 </div>
-                <div style="padding: 20px;">
-                    <p style="color: #7f8c8d; margin-bottom: 20px;">
-                        <i class="fas fa-info-circle"></i> 
-                        Veritabanındaki tüm kontrol kayıtlarını yönetin. Kayıtları düzenleyebilir veya silebilirsiniz.
-                    </p>
+                <div style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Tarih/Saat</th>
-                                <th>Kask</th>
-                                <th>Yelek</th>
-                                <th>Durum</th>
-                                <th>İşlemler</th>
+                                <th>Fotoğraf</th>
+                                <th>Ad</th>
+                                <th>Soyad</th>
+                                <th>Sicil No</th>
+                                <th>
+                                    <i class="fas fa-sort-down" style="color: #4f46e5; margin-right: 5px;"></i>
+                                    Kayıt Tarihi (En Yeni)
+                                </th>
                             </tr>
                         </thead>
-                        <tbody id="settings-table">
-                            <tr><td colspan="6" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                        <tbody id="users-table">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+        
+        <!-- External Data Page -->
+        <div id="external-data-page" class="page-content" style="display: none;">
+            <div class="header">
+                <h1>🔄 Dış Veri Yönetimi</h1>
+                <button class="refresh-btn" onclick="loadExternalData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Yenile
+                </button>
+            </div>
+            
+            <!-- API Bilgileri -->
+            <div class="table-container" style="margin-bottom: 30px;">
+                <div class="table-header">
+                    <h2>📡 API Endpoint Bilgileri</h2>
+                </div>
+                <div style="padding: 20px; background: #f8fafc; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="color: #1a1d29; margin-bottom: 15px; font-size: 1.1em;">
+                        <i class="fas fa-info-circle" style="color: #4f46e5;"></i> 
+                        Arkadaşınızın Sistemi İçin API Bilgileri
+                    </h3>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #4f46e5; margin-bottom: 15px;">
+                        <strong>Endpoint URL:</strong><br>
+                        <code style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-family: monospace;">
+                            POST http://72.62.60.125:5002/api/veri-al
+                        </code>
+                    </div>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+                        <strong>Gönderilecek JSON Formatı:</strong><br>
+                        <pre style="background: #f1f5f9; padding: 12px; border-radius: 6px; font-size: 0.9em; overflow-x: auto; margin: 8px 0 0 0;"><code>{
+  "isim": "Ahmet",
+  "soyisim": "Yılmaz", 
+  "departman": "Üretim",
+  "durum": "Gecti",
+  "tarih": "24.05.2024",
+  "saat": "14:30:05"
+}</code></pre>
+                    </div>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                        <strong>Durum Değerleri:</strong> "Gecti" veya "Kaldi"<br>
+                        <strong>Content-Type:</strong> application/json<br>
+                        <strong>Method:</strong> POST
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-card blue">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Toplam Dış Veri</h3>
+                    <div class="number" id="total-external-data">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Geçti</h3>
+                    <div class="number" id="passed-external-data">0</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h3>Kaldı</h3>
+                    <div class="number" id="failed-external-data">0</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <h3>Bugün</h3>
+                    <div class="number" id="today-external-data">0</div>
+                </div>
+            </div>
+            
+            <!-- External Data Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Gelen Dış Veriler</h2>
+                    <div class="export-buttons">
+                        <button class="export-btn excel" onclick="exportExternalDataExcel()">
+                            <i class="fas fa-file-excel"></i>
+                            Excel İndir
+                        </button>
+                        <button class="export-btn" onclick="clearExternalData()">
+                            <i class="fas fa-trash"></i>
+                            Temizle
+                        </button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tarih/Saat</th>
+                                <th>Ad Soyad</th>
+                                <th>Departman</th>
+                                <th>Durum</th>
+                                <th>
+                                    <i class="fas fa-sort-down" style="color: #4f46e5; margin-right: 5px;"></i>
+                                    Alındığı Zaman (En Yeni)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="external-data-table">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="settings-page" class="page-content" style="display: none;">
+            <div class="header">
+                <h1>⚙️ Veri Yönetimi</h1>
+                <button class="refresh-btn" onclick="loadSettings()">
+                    <i class="fas fa-sync-alt"></i>
+                    Yenile
+                </button>
             </div>
             
             <!-- Sistem Bilgileri -->
@@ -535,30 +1030,180 @@
                         <i class="fas fa-database"></i>
                     </div>
                     <h3>Toplam Kayıt</h3>
-                    <div class="number" id="total-records">0</div>
+                    <div class="number" id="total-records-settings">0</div>
                 </div>
                 <div class="stat-card green">
                     <div class="stat-icon">
-                        <i class="fas fa-server"></i>
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                    <h3>Sunucu Durumu</h3>
-                    <div class="number" style="font-size: 1.5em;">Aktif</div>
+                    <h3>Uygun</h3>
+                    <div class="number" id="compliant-settings">0</div>
                 </div>
-                <div class="stat-card orange">
+                <div class="stat-card red">
                     <div class="stat-icon">
-                        <i class="fas fa-code-branch"></i>
+                        <i class="fas fa-times-circle"></i>
                     </div>
-                    <h3>Versiyon</h3>
-                    <div class="number" style="font-size: 1.5em;">v1.0.0</div>
+                    <h3>Uygun Değil</h3>
+                    <div class="number" id="non-compliant-settings">0</div>
+                </div>
+            </div>
+            
+            <!-- Kontrol Kayıtları Tablosu -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>📋 Tüm Kontrol Kayıtları</h2>
+                    <div class="export-buttons">
+                        <button class="export-btn" onclick="showAddRecordModal()">
+                            <i class="fas fa-plus"></i>
+                            Yeni Kayıt
+                        </button>
+                        <button class="export-btn excel" onclick="backupDatabase()">
+                            <i class="fas fa-download"></i>
+                            Yedek Al
+                        </button>
+                        <button class="export-btn" style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); color: white; border: none;" onclick="clearAllData()">
+                            <i class="fas fa-trash"></i>
+                            Tümünü Sil
+                        </button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <i class="fas fa-sort-down" style="color: #4f46e5; margin-right: 5px;"></i>
+                                    Tarih/Saat (En Yeni)
+                                </th>
+                                <th>Kask</th>
+                                <th>Yelek</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="settings-table">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px;">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+        
+        <!-- Kayıt Ekleme/Düzenleme Modal -->
+        <div id="record-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+            <div style="background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 id="modal-title" style="color: #1a1d29; font-size: 1.4em; font-weight: 700;">Yeni Kayıt Ekle</h2>
+                    <button onclick="closeRecordModal()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #64748b;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="record-form" onsubmit="saveRecord(event)">
+                    <input type="hidden" id="record-id" value="">
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; color: #475569; font-weight: 600; margin-bottom: 8px;">
+                            <i class="fas fa-calendar"></i> Tarih ve Saat
+                        </label>
+                        <input type="datetime-local" id="record-timestamp" required 
+                               style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95em;">
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; color: #475569; font-weight: 600; margin-bottom: 12px;">
+                            <i class="fas fa-hard-hat"></i> Kask Durumu
+                        </label>
+                        <div style="display: flex; gap: 15px;">
+                            <label style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s;">
+                                <input type="radio" name="kask" value="1" required style="display: none;">
+                                <div class="radio-option">
+                                    <i class="fas fa-check-circle" style="font-size: 1.5em; color: #10b981; margin-bottom: 5px;"></i>
+                                    <div style="font-weight: 600;">Var</div>
+                                </div>
+                            </label>
+                            <label style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s;">
+                                <input type="radio" name="kask" value="0" style="display: none;">
+                                <div class="radio-option">
+                                    <i class="fas fa-times-circle" style="font-size: 1.5em; color: #ef4444; margin-bottom: 5px;"></i>
+                                    <div style="font-weight: 600;">Yok</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <label style="display: block; color: #475569; font-weight: 600; margin-bottom: 12px;">
+                            <i class="fas fa-vest"></i> Yelek Durumu
+                        </label>
+                        <div style="display: flex; gap: 15px;">
+                            <label style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s;">
+                                <input type="radio" name="yelek" value="1" required style="display: none;">
+                                <div class="radio-option">
+                                    <i class="fas fa-check-circle" style="font-size: 1.5em; color: #10b981; margin-bottom: 5px;"></i>
+                                    <div style="font-weight: 600;">Var</div>
+                                </div>
+                            </label>
+                            <label style="flex: 1; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s;">
+                                <input type="radio" name="yelek" value="0" style="display: none;">
+                                <div class="radio-option">
+                                    <i class="fas fa-times-circle" style="font-size: 1.5em; color: #ef4444; margin-bottom: 5px;"></i>
+                                    <div style="font-weight: 600;">Yok</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px;">
+                        <button type="button" onclick="closeRecordModal()" 
+                                style="flex: 1; padding: 12px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; font-weight: 600; cursor: pointer; color: #64748b;">
+                            İptal
+                        </button>
+                        <button type="submit" 
+                                style="flex: 1; padding: 12px; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <style>
+            label:has(input[type="radio"]:checked) {
+                border-color: #4f46e5 !important;
+                background: #eef2ff !important;
+            }
+            #record-modal {
+                display: none;
+            }
+            #record-modal.active {
+                display: flex !important;
+            }
+        </style>
     </div>
 
     <script>
         let pieChart, barChart, lineChart, radarChart;
         let allInspections = [];
         let currentStats = {};
+        
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        // Close mobile menu when clicking nav item
+        function closeMobileMenu() {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.querySelector('.mobile-overlay');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
         
         function showPage(pageName) {
             // Hide all pages
@@ -577,9 +1222,18 @@
             // Add active class to clicked nav item
             event.target.closest('.nav-item').classList.add('active');
             
-            // Load data for reports page
+            // Close mobile menu
+            closeMobileMenu();
+            
+            // Load data for specific pages
             if (pageName === 'reports') {
                 loadReportsData();
+            } else if (pageName === 'settings') {
+                loadSettings();
+            } else if (pageName === 'users') {
+                loadUsers();
+            } else if (pageName === 'external-data') {
+                loadExternalData();
             }
         }
         
@@ -608,11 +1262,25 @@
                     return;
                 }
                 
+                // Tarihe göre sırala (en yeni üstte)
+                inspections.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
                 inspections.forEach(insp => {
                     const date = new Date(insp.timestamp);
+                    // Türkiye saat diliminde göster
+                    const formattedDate = date.toLocaleString('tr-TR', {
+                        timeZone: 'Europe/Istanbul',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
                     const row = `
                         <tr>
-                            <td>${date.toLocaleString('tr-TR')}</td>
+                            <td style="font-weight: 600; color: #1a1d29;">${formattedDate}</td>
                             <td><i class="fas fa-${insp.kask ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
                             <td><i class="fas fa-${insp.yelek ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
                             <td>
@@ -654,11 +1322,25 @@
                 if (inspections.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz kayıt yok</td></tr>';
                 } else {
+                    // Tarihe göre sırala (en yeni üstte)
+                    inspections.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    
                     inspections.forEach(insp => {
                         const date = new Date(insp.timestamp);
+                        // Türkiye saat diliminde göster
+                        const formattedDate = date.toLocaleString('tr-TR', {
+                            timeZone: 'Europe/Istanbul',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                        
                         const row = `
                             <tr>
-                                <td>${date.toLocaleString('tr-TR')}</td>
+                                <td style="font-weight: 600; color: #1a1d29;">${formattedDate}</td>
                                 <td><i class="fas fa-${insp.kask ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
                                 <td><i class="fas fa-${insp.yelek ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
                                 <td>
@@ -905,12 +1587,28 @@
             doc.setFontSize(18);
             doc.text('📋 DETAYLI KONTROL KAYITLARI', 14, 20);
             
-            const tableData = allInspections.map(insp => [
-                new Date(insp.timestamp).toLocaleString('tr-TR'),
-                insp.kask ? '✓' : '✗',
-                insp.yelek ? '✓' : '✗',
-                insp.uygunluk ? 'Uygun' : 'Uygun Degil'
-            ]);
+            // Tarihe göre sırala (en yeni üstte) ve PDF için formatla
+            const sortedInspections = [...allInspections].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            const tableData = sortedInspections.map(insp => {
+                const date = new Date(insp.timestamp);
+                const formattedDate = date.toLocaleString('tr-TR', {
+                    timeZone: 'Europe/Istanbul',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                return [
+                    formattedDate,
+                    insp.kask ? '✓' : '✗',
+                    insp.yelek ? '✓' : '✗',
+                    insp.uygunluk ? 'Uygun' : 'Uygun Degil'
+                ];
+            });
             
             doc.autoTable({
                 startY: 30,
@@ -950,12 +1648,28 @@
         }
         
         function exportExcel() {
-            const data = allInspections.map(insp => ({
-                'Tarih/Saat': new Date(insp.timestamp).toLocaleString('tr-TR'),
-                'Kask': insp.kask ? 'Var' : 'Yok',
-                'Yelek': insp.yelek ? 'Var' : 'Yok',
-                'Durum': insp.uygunluk ? 'Uygun' : 'Uygun Değil'
-            }));
+            // Tarihe göre sırala (en yeni üstte) ve Excel için formatla
+            const sortedInspections = [...allInspections].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            const data = sortedInspections.map(insp => {
+                const date = new Date(insp.timestamp);
+                const formattedDate = date.toLocaleString('tr-TR', {
+                    timeZone: 'Europe/Istanbul',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                return {
+                    'Tarih/Saat': formattedDate,
+                    'Kask': insp.kask ? 'Var' : 'Yok',
+                    'Yelek': insp.yelek ? 'Var' : 'Yok',
+                    'Durum': insp.uygunluk ? 'Uygun' : 'Uygun Değil'
+                };
+            });
             
             // İstatistikler sayfası
             const statsData = [
@@ -981,25 +1695,44 @@
         
         async function loadSettings() {
             try {
+                // İstatistikleri yükle
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                document.getElementById('total-records-settings').textContent = stats.total;
+                document.getElementById('compliant-settings').textContent = stats.compliant;
+                document.getElementById('non-compliant-settings').textContent = stats.non_compliant;
+                
+                // Kayıtları yükle
                 const res = await fetch('/api/inspections_with_id');
                 const inspections = await res.json();
-                
-                document.getElementById('total-records').textContent = inspections.length;
                 
                 const tbody = document.getElementById('settings-table');
                 tbody.innerHTML = '';
                 
                 if (inspections.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz kayıt yok</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">Henüz kayıt yok</td></tr>';
                     return;
                 }
                 
+                // Tarihe göre sırala (en yeni üstte)
+                inspections.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
                 inspections.forEach(insp => {
                     const date = new Date(insp.timestamp);
+                    // Türkiye saat diliminde göster
+                    const formattedDate = date.toLocaleString('tr-TR', {
+                        timeZone: 'Europe/Istanbul',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
                     const row = `
                         <tr>
-                            <td>${insp.id}</td>
-                            <td>${date.toLocaleString('tr-TR')}</td>
+                            <td style="font-weight: 600; color: #1a1d29;">${formattedDate}</td>
                             <td><i class="fas fa-${insp.kask ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
                             <td><i class="fas fa-${insp.yelek ? 'check-circle check-yes' : 'times-circle check-no'} check-icon"></i></td>
                             <td>
@@ -1008,8 +1741,11 @@
                                 </span>
                             </td>
                             <td>
-                                <button onclick="deleteRecord(${insp.id})" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                                    <i class="fas fa-trash"></i> Sil
+                                <button onclick="editRecord(${insp.id})" style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-right: 5px;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteRecord(${insp.id})" style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
@@ -1018,6 +1754,101 @@
                 });
             } catch (error) {
                 console.error('Ayarlar yükleme hatası:', error);
+            }
+        }
+        
+        function showAddRecordModal() {
+            document.getElementById('modal-title').textContent = 'Yeni Kayıt Ekle';
+            document.getElementById('record-id').value = '';
+            document.getElementById('record-form').reset();
+            
+            // Şu anki tarih ve saati ayarla
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('record-timestamp').value = localDateTime;
+            
+            document.getElementById('record-modal').classList.add('active');
+        }
+        
+        async function editRecord(id) {
+            try {
+                const res = await fetch('/api/inspections_with_id');
+                const inspections = await res.json();
+                const record = inspections.find(r => r.id === id);
+                
+                if (!record) {
+                    alert('Kayıt bulunamadı!');
+                    return;
+                }
+                
+                document.getElementById('modal-title').textContent = 'Kaydı Düzenle';
+                document.getElementById('record-id').value = record.id;
+                
+                // Tarihi local datetime formatına çevir
+                const date = new Date(record.timestamp);
+                const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('record-timestamp').value = localDateTime;
+                
+                // Radio butonları seç
+                document.querySelector(`input[name="kask"][value="${record.kask}"]`).checked = true;
+                document.querySelector(`input[name="yelek"][value="${record.yelek}"]`).checked = true;
+                
+                document.getElementById('record-modal').classList.add('active');
+            } catch (error) {
+                console.error('Kayıt yükleme hatası:', error);
+                alert('Kayıt yüklenirken hata oluştu!');
+            }
+        }
+        
+        function closeRecordModal() {
+            document.getElementById('record-modal').classList.remove('active');
+        }
+        
+        async function saveRecord(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('record-id').value;
+            const timestamp = new Date(document.getElementById('record-timestamp').value).toISOString();
+            const kask = parseInt(document.querySelector('input[name="kask"]:checked').value);
+            const yelek = parseInt(document.querySelector('input[name="yelek"]:checked').value);
+            const uygunluk = (kask && yelek) ? 1 : 0;
+            
+            const data = {
+                timestamp: timestamp,
+                kask: kask,
+                yelek: yelek,
+                uygunluk: uygunluk
+            };
+            
+            try {
+                let res;
+                if (id) {
+                    // Güncelleme
+                    res = await fetch(`/api/update_inspection/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    // Yeni kayıt
+                    res = await fetch('/api/add_inspection', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                }
+                
+                if (res.ok) {
+                    alert(id ? '✅ Kayıt güncellendi!' : '✅ Kayıt eklendi!');
+                    closeRecordModal();
+                    loadSettings();
+                    loadData();
+                } else {
+                    alert('❌ İşlem başarısız!');
+                }
+            } catch (error) {
+                console.error('Kayıt kaydetme hatası:', error);
+                alert('❌ Kayıt kaydedilirken hata oluştu!');
             }
         }
         
@@ -1032,15 +1863,158 @@
                 });
                 
                 if (res.ok) {
-                    alert('Kayıt başarıyla silindi!');
+                    alert('✅ Kayıt silindi!');
                     loadSettings();
-                    loadData(); // Dashboard'u da güncelle
+                    loadData();
                 } else {
-                    alert('Kayıt silinirken hata oluştu!');
+                    alert('❌ Kayıt silinirken hata oluştu!');
                 }
             } catch (error) {
                 console.error('Silme hatası:', error);
-                alert('Kayıt silinirken hata oluştu!');
+                alert('❌ Kayıt silinirken hata oluştu!');
+            }
+        }
+        
+        async function addTestData() {
+            if (!confirm('10 adet test verisi eklenecek. Devam edilsin mi?')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/add_test_data', {
+                    method: 'POST'
+                });
+                
+                if (res.ok) {
+                    alert('✅ Test verileri başarıyla eklendi!');
+                    loadSettings();
+                    loadData();
+                } else {
+                    alert('❌ Test verileri eklenirken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Test verisi ekleme hatası:', error);
+                alert('❌ Test verileri eklenirken hata oluştu!');
+            }
+        }
+        
+        // Users Page Functions
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/users');
+                const data = await res.json();
+                
+                // Update stats
+                const total = data.total;
+                const today = new Date().toLocaleDateString('tr-TR');
+                const todayUsers = data.users.filter(user => {
+                    const userDate = new Date(user.created_at).toLocaleDateString('tr-TR');
+                    return userDate === today;
+                }).length;
+                
+                document.getElementById('total-users').textContent = total;
+                document.getElementById('active-users').textContent = total; // Tüm kullanıcılar aktif sayılır
+                document.getElementById('today-users').textContent = todayUsers;
+                
+                // Update table
+                const tbody = document.getElementById('users-table');
+                tbody.innerHTML = '';
+                
+                if (data.users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz kullanıcı yok</td></tr>';
+                    return;
+                }
+                
+                data.users.forEach(user => {
+                    console.log('User data:', user); // Debug için
+                    const createdDate = new Date(user.created_at);
+                    const photoCell = user.photo_filename 
+                        ? `<img src="/users/${user.photo_filename}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Fotoğraf">`
+                        : '<i class="fas fa-user-circle" style="font-size: 40px; color: #cbd5e1;"></i>';
+                    
+                    const row = `
+                        <tr>
+                            <td style="text-align: center;">${photoCell}</td>
+                            <td>${user.name}</td>
+                            <td>${user.surname}</td>
+                            <td>
+                                <span class="badge" style="background: ${user.sicil_no.startsWith('EXT') ? '#fff3e0' : '#e8f5e8'}; color: ${user.sicil_no.startsWith('EXT') ? '#f57c00' : '#2e7d32'};">
+                                    ${user.sicil_no}
+                                </span>
+                            </td>
+                            <td>${createdDate.toLocaleString('tr-TR')}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+                
+            } catch (error) {
+                console.error('Kullanıcılar yükleme hatası:', error);
+                document.getElementById('users-table').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #e74c3c;">Veri yüklenirken hata oluştu</td></tr>';
+            }
+        }
+        
+        async function exportUsersExcel() {
+            try {
+                const res = await fetch('/api/users');
+                const data = await res.json();
+                
+                if (data.users.length === 0) {
+                    alert('Dışa aktarılacak kullanıcı yok!');
+                    return;
+                }
+                
+                const ws_data = [
+                    ['Ad', 'Soyad', 'Sicil No', 'Kayıt Tarihi']
+                ];
+                
+                data.users.forEach(user => {
+                    const createdDate = new Date(user.created_at);
+                    ws_data.push([
+                        user.name,
+                        user.surname,
+                        user.sicil_no,
+                        createdDate.toLocaleString('tr-TR')
+                    ]);
+                });
+                
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                
+                // Column widths
+                ws['!cols'] = [
+                    { wch: 15 }, // Ad
+                    { wch: 15 }, // Soyad
+                    { wch: 12 }, // Sicil No
+                    { wch: 20 }  // Kayıt Tarihi
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'Kullanıcılar');
+                XLSX.writeFile(wb, `kullanicilar_${new Date().toISOString().split('T')[0]}.xlsx`);
+                
+            } catch (error) {
+                console.error('Excel export hatası:', error);
+                alert('Excel dosyası oluşturulurken hata oluştu!');
+            }
+        }
+        
+        async function backupDatabase() {
+            try {
+                const res = await fetch('/api/backup');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ppe_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                alert('✅ Yedek başarıyla indirildi!');
+            } catch (error) {
+                console.error('Yedekleme hatası:', error);
+                alert('❌ Yedekleme sırasında hata oluştu!');
             }
         }
         
@@ -1069,6 +2043,297 @@
                 console.error('Silme hatası:', error);
                 alert('Kayıtlar silinirken hata oluştu!');
             }
+        }
+        
+        // External Data Functions
+        async function loadExternalData() {
+            try {
+                const res = await fetch('/api/external-data');
+                const data = await res.json();
+                
+                // Update stats
+                const total = data.total;
+                const passed = data.data.filter(item => item.durum === 'Gecti').length;
+                const failed = data.data.filter(item => item.durum === 'Kaldi').length;
+                
+                // Today's data
+                const today = new Date().toLocaleDateString('tr-TR');
+                const todayData = data.data.filter(item => {
+                    const itemDate = new Date(item.created_at).toLocaleDateString('tr-TR');
+                    return itemDate === today;
+                }).length;
+                
+                document.getElementById('total-external-data').textContent = total;
+                document.getElementById('passed-external-data').textContent = passed;
+                document.getElementById('failed-external-data').textContent = failed;
+                document.getElementById('today-external-data').textContent = todayData;
+                
+                // Update table
+                const tbody = document.getElementById('external-data-table');
+                tbody.innerHTML = '';
+                
+                if (data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #95a5a6;">Henüz dış veri yok</td></tr>';
+                    return;
+                }
+                
+                // Tarihe göre sırala (en yeni üstte)
+                data.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                data.data.forEach(item => {
+                    const createdDate = new Date(item.created_at);
+                    // Türkiye saat diliminde göster
+                    const formattedCreatedDate = createdDate.toLocaleString('tr-TR', {
+                        timeZone: 'Europe/Istanbul',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    const row = `
+                        <tr>
+                            <td style="font-weight: 600; color: #1a1d29;">${item.tarih} ${item.saat}</td>
+                            <td>${item.isim} ${item.soyisim}</td>
+                            <td>${item.departman}</td>
+                            <td>
+                                <span class="badge ${item.durum === 'Gecti' ? 'badge-success' : 'badge-danger'}">
+                                    ${item.durum === 'Gecti' ? '✓ Geçti' : '✗ Kaldı'}
+                                </span>
+                            </td>
+                            <td style="color: #64748b;">${formattedCreatedDate}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+                
+            } catch (error) {
+                console.error('Dış veri yükleme hatası:', error);
+                document.getElementById('external-data-table').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #e74c3c;">Veri yüklenirken hata oluştu</td></tr>';
+            }
+        }
+        
+        async function exportExternalDataExcel() {
+            try {
+                const res = await fetch('/api/external-data');
+                const data = await res.json();
+                
+                if (data.data.length === 0) {
+                    alert('Dışa aktarılacak veri yok!');
+                    return;
+                }
+                
+                const ws_data = [
+                    ['Tarih', 'Saat', 'Ad', 'Soyad', 'Departman', 'Durum', 'Alındığı Zaman']
+                ];
+                
+                // Tarihe göre sırala (en yeni üstte)
+                const sortedData = [...data.data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                sortedData.forEach(item => {
+                    const createdDate = new Date(item.created_at);
+                    const formattedCreatedDate = createdDate.toLocaleString('tr-TR', {
+                        timeZone: 'Europe/Istanbul',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    ws_data.push([
+                        item.tarih,
+                        item.saat,
+                        item.isim,
+                        item.soyisim,
+                        item.departman,
+                        item.durum,
+                        formattedCreatedDate
+                    ]);
+                });
+                
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                
+                // Column widths
+                ws['!cols'] = [
+                    { wch: 12 }, // Tarih
+                    { wch: 10 }, // Saat
+                    { wch: 15 }, // Ad
+                    { wch: 15 }, // Soyad
+                    { wch: 15 }, // Departman
+                    { wch: 10 }, // Durum
+                    { wch: 20 }  // Alındığı Zaman
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'Dış Veri');
+                XLSX.writeFile(wb, `dis_veri_${new Date().toISOString().split('T')[0]}.xlsx`);
+                
+            } catch (error) {
+                console.error('Excel export hatası:', error);
+                alert('Excel dosyası oluşturulurken hata oluştu!');
+            }
+        }
+        
+        async function clearExternalData() {
+            if (!confirm('Tüm dış veri kayıtları silinecek. Devam edilsin mi?')) {
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/clear-external-data', {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    alert('✅ Dış veri kayıtları temizlendi!');
+                    loadExternalData();
+                } else {
+                    alert('❌ Temizleme sırasında hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Temizleme hatası:', error);
+                alert('❌ Temizleme sırasında hata oluştu!');
+            }
+        }
+        
+        // Users Page Functions
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/users');
+                const data = await res.json();
+                
+                const users = data.users || [];
+                const total = users.length;
+                
+                // İstatistikleri güncelle
+                document.getElementById('total-users').textContent = total;
+                document.getElementById('active-users').textContent = total; // Tüm kullanıcılar aktif
+                
+                // Bugün kayıt olanları say
+                const today = new Date().toDateString();
+                const todayUsers = users.filter(u => {
+                    const userDate = new Date(u.created_at).toDateString();
+                    return userDate === today;
+                }).length;
+                document.getElementById('today-users').textContent = todayUsers;
+                
+                // Tabloyu doldur
+                const tbody = document.getElementById('users-table');
+                tbody.innerHTML = '';
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">Henüz kayıtlı kullanıcı yok</td></tr>';
+                    return;
+                }
+                
+                // Tarihe göre sırala (en yeni üstte)
+                users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                
+                users.forEach(user => {
+                    const date = new Date(user.created_at);
+                    // Türkiye saat diliminde göster
+                    const formattedDate = date.toLocaleString('tr-TR', {
+                        timeZone: 'Europe/Istanbul',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    const photoUrl = user.photo_filename ? `/users/${user.photo_filename}` : '';
+                    
+                    const row = `
+                        <tr>
+                            <td>
+                                ${photoUrl ? `
+                                    <img src="${photoUrl}" 
+                                         alt="${user.name}" 
+                                         style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0;"
+                                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect fill=%22%23e2e8f0%22 width=%2250%22 height=%2250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22%2364748b%22%3E${user.name.charAt(0)}%3C/text%3E%3C/svg%3E'">
+                                ` : `
+                                    <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
+                                        ${user.name.charAt(0)}
+                                    </div>
+                                `}
+                            </td>
+                            <td style="font-weight: 600;">${user.name}</td>
+                            <td style="font-weight: 600;">${user.surname}</td>
+                            <td>
+                                <span style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: white; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-family: monospace;">
+                                    ${user.sicil_no}
+                                </span>
+                            </td>
+                            <td style="color: #64748b; font-weight: 600;">${formattedDate}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Kullanıcılar yükleme hatası:', error);
+                document.getElementById('users-table').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #e74c3c;">Kullanıcılar yüklenirken hata oluştu</td></tr>';
+            }
+        }
+        
+        function exportUsersExcel() {
+            fetch('/api/users')
+                .then(res => res.json())
+                .then(data => {
+                    const users = data.users || [];
+                    
+                    if (users.length === 0) {
+                        alert('Dışa aktarılacak kullanıcı yok!');
+                        return;
+                    }
+                    
+                    // Tarihe göre sırala (en yeni üstte)
+                    const sortedUsers = [...users].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    
+                    const excelData = sortedUsers.map(user => {
+                        const date = new Date(user.created_at);
+                        const formattedDate = date.toLocaleString('tr-TR', {
+                            timeZone: 'Europe/Istanbul',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                        
+                        return {
+                            'Ad': user.name,
+                            'Soyad': user.surname,
+                            'Sicil No': user.sicil_no,
+                            'Kayıt Tarihi': formattedDate
+                        };
+                    });
+                    
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.json_to_sheet(excelData);
+                    
+                    // Sütun genişliklerini ayarla
+                    ws['!cols'] = [
+                        { wch: 15 }, // Ad
+                        { wch: 15 }, // Soyad
+                        { wch: 15 }, // Sicil No
+                        { wch: 20 }  // Kayıt Tarihi
+                    ];
+                    
+                    XLSX.utils.book_append_sheet(wb, ws, 'Kullanıcılar');
+                    XLSX.writeFile(wb, `Kullanicilar_${new Date().toISOString().split('T')[0]}.xlsx`);
+                })
+                .catch(error => {
+                    console.error('Excel export hatası:', error);
+                    alert('Excel dosyası oluşturulurken hata oluştu!');
+                });
         }
         
         // Sayfa yüklendiğinde ve her 30 saniyede bir yenile

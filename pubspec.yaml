@@ -36,13 +36,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   
   # Camera plugin for capturing live video feed
-  camera: ^0.10.5+5
+  camera: ^0.10.5+9
   
   # TensorFlow Lite for running ML models
   tflite_flutter: ^0.11.0
   
   # Path provider for accessing device storage
   path_provider: ^2.1.5
+  path: ^1.8.3
   
   # Image processing for preprocessing
   image: ^4.2.0

@@ -1,57 +1,80 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Flutter
 .dart_tool/
-.flutter-plugins-dependencies
+.flutter-plugins
+.flutter-plugins-dependencies*
+.packages
 .pub-cache/
 .pub/
-/build/
-/coverage/
+build/
+flutter_*.png
+linked_*.ds
+unlinked.ds
+unlinked_spec.ds
+flutter_*.log
 
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-# Backend related
-backend/build/
-ios/build/
-backend/*.jpg
-backend/*.db
-android/build/
+# iOS
 ios/Pods/
-**/Pods/
-*.pt
-*.tflite
-backend/backend/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.generated/
+ios/Flutter/Generated*.xcconfig
+ios/Flutter/flutter_export_environment*.sh
+
+# Android
+android/.gradle/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/key.properties
+*.jks
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Backend
+backend/ppe_inspections.db
+backend/inspections/*.jpg
+backend/inspections/*.png
+backend/last_test_image.jpg
+backend/*.log
+backend/users/
+backend/captured_image.jpg
+backend/detected_image.jpg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Model files (büyük dosyalar)
+backend/models/*.pt
+ppe-inspector-main-2/
+
+# Build outputs
+*.ipa
+*.apk
+
+# Scripts (opsiyonel)
+*.sh
+
+# Secrets
+*.env
+.env.local
+secrets.json

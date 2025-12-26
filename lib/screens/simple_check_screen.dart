@@ -6,7 +6,14 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 
 class SimpleCheckScreen extends StatefulWidget {
-  const SimpleCheckScreen({super.key});
+  final String? userName;
+  final String? sicilNo;
+  
+  const SimpleCheckScreen({
+    super.key,
+    this.userName,
+    this.sicilNo,
+  });
 
   @override
   State<SimpleCheckScreen> createState() => _SimpleCheckScreenState();
@@ -15,8 +22,8 @@ class SimpleCheckScreen extends StatefulWidget {
 class _SimpleCheckScreenState extends State<SimpleCheckScreen> {
   
   // -----------------------------------------------------------------
-  // Backend API (port 5001) - Yeni eğitilmiş model
-  final String serverUrl = "http://172.20.10.14:5001/validate_image";
+  // Backend API - VPS
+  final String serverUrl = "http://72.62.60.125:5002/validate_image";
   // -----------------------------------------------------------------
 
   File? _imageFile;
@@ -122,6 +129,36 @@ class _SimpleCheckScreenState extends State<SimpleCheckScreen> {
         title: const Text("KKE Kontrol Sistemi"),
         centerTitle: true,
         backgroundColor: Colors.blue,
+        actions: [
+          if (widget.userName != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      widget.userName!,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (widget.sicilNo != null)
+                      Text(
+                        "Sicil: ${widget.sicilNo}",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white70,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Center(
